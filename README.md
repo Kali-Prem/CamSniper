@@ -116,6 +116,7 @@ The following images demonstrate exact GPS location capture:
 | **GPS Location** | **Google Maps** |
 |:------------------------:|:-------------------------:|
 | <img src="images/gps-location-proof.jpg" alt="GPS Location Capture" width="300"> | <img src="images/google-maps-proof.jpg" alt="Google Maps Link" width="300"> |
+| <img src="images/Gps.png" alt="GPS Location Proof" width="300"> | |
 
 **Key Indicators:**
 - ✅ Latitude and Longitude coordinates displayed
@@ -266,6 +267,10 @@ logs/
 ### Terminal — CamSniper Ready with Phishing URL
 
 ![CamSniper Terminal — Ready State](image2.png)
+
+### Terminal — camsniper-terminal-interface.png
+
+![CamSniper Terminal Interface](images/camsniper-terminal-interface.png)
 
 ### Web Dashboard — Exact GPS Location Captured
 

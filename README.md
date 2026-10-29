@@ -128,7 +128,7 @@ The following images demonstrate exact GPS location capture:
 
 | **Captured Photo** | **Dashboard Display** |
 |:------------------------:|:-------------------------:|
-| <img src="Images/captured-photo.jpg" alt="Captured Photo" width="300"> | <img src="dashboard-thumbnail.jpg" alt="Dashboard Photo" width="300"> |
+| <img src="Images/captured-photo.jpg" alt="Captured Photo" width="300"> | <img src="dashboard-thumbnail.png" alt="Dashboard Photo" width="300"> |
 
 **Key Indicators:**
 - ✅ Photo file saved with timestamp

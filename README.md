@@ -115,8 +115,8 @@ The following images demonstrate exact GPS location capture:
 
 | **GPS Location** | **Google Maps** |
 |:------------------------:|:-------------------------:|
-| <img src="images/gps-location-proof.jpg" alt="GPS Location Capture" width="300"> | <img src="images/google-maps-proof.jpg" alt="Google Maps Link" width="300"> |
-| <img src="images/Gps.png" alt="GPS Location Proof" width="300"> | |
+| <img src="Images/gps-location-proof.jpg" alt="GPS Location Capture" width="300"> | <img src="Images/google-maps-proof.jpg" alt="Google Maps Link" width="300"> |
+| <img src="Images/Gps.png" alt="GPS Location Proof" width="300"> | |
 
 **Key Indicators:**
 - ✅ Latitude and Longitude coordinates displayed
@@ -128,7 +128,7 @@ The following images demonstrate exact GPS location capture:
 
 | **Captured Photo** | **Dashboard Display** |
 |:------------------------:|:-------------------------:|
-| <img src="images/captured-photo.jpg" alt="Captured Photo" width="300"> | <img src="dashboard-thumbnail.jpg" alt="Dashboard Photo" width="300"> |
+| <img src="Images/captured-photo.jpg" alt="Captured Photo" width="300"> | <img src="dashboard-thumbnail.jpg" alt="Dashboard Photo" width="300"> |
 
 **Key Indicators:**
 - ✅ Photo file saved with timestamp
@@ -138,7 +138,7 @@ The following images demonstrate exact GPS location capture:
 
 ### Terminal Output Proof
 
-![Terminal showing exact GPS coordinates](images/terminal-gps-proof.jpg)
+![Terminal showing exact GPS coordinates](Images/terminal-gps-proof.jpg)
 
 **What to look for:**
 - `[DEBUG] ✓ GPS fix:` message with coordinates
@@ -262,19 +262,19 @@ logs/
 
 ### Terminal — Template Selection & Tunnel Setup
 
-![CamSniper Terminal — Template & Tunnel Setup](image1.png)
+![CamSniper Terminal — Template & Tunnel Setup](Images/image1.png)
 
 ### Terminal — CamSniper Ready with Phishing URL
 
-![CamSniper Terminal — Ready State](image2.png)
+![CamSniper Terminal — Ready State](Images/image2.png)
 
 ### Terminal — camsniper-terminal-interface.png
 
-![CamSniper Terminal Interface](images/camsniper-terminal-interface.png)
+![CamSniper Terminal Interface](Images/camsniper-terminal-interface.png)
 
 ### Web Dashboard — Exact GPS Location Captured
 
-![CamSniper Dashboard — GPS Location](image3.png)
+![CamSniper Dashboard — GPS Location](Images/image3.png)
 
 > **Note:** Latitude and longitude coordinates in screenshots are blurred for privacy protection.
 

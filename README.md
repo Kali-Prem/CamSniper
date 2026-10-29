@@ -20,6 +20,11 @@
 
 </div>
 
+### Terminal — camsniper-terminal-interface.png
+
+![CamSniper Terminal Interface](Images/camsniper-terminal-interface.png)
+
+
 
 
 ## 📋 Table of Contents

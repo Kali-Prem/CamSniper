@@ -234,6 +234,10 @@ The dashboard displays:
 - 🖥️ Device fingerprint information
 - 📊 Real-time statistics
 
+### Dashboard Thumbnail
+
+![CamSniper Dashboard Thumbnail](Images/dashboard-thumbnail.png)
+
 ---
 
 ## 📸 Captured Data

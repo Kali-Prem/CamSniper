@@ -1,0 +1,16 @@
+{
+  "session_id": "1793271199_127_0_0_1",
+  "ip": "127.0.0.1",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+  "referrer": "http://localhost:8080/",
+  "template": "festival",
+  "screen": {
+    "width": 1920,
+    "height": 1080
+  },
+  "battery": {},
+  "geo": {},
+  "platform": "Linux x86_64",
+  "language": "en-US",
+  "connection": {}
+}

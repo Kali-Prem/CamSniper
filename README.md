@@ -161,27 +161,6 @@ The following images demonstrate exact GPS location capture:
 
 ---
 
-## 📸 How to Add Your Own Screenshots
-
-1. Take screenshots of:
-   - GPS location on dashboard with coordinates
-   - Google Maps link opening to the exact location
-   - Terminal output showing GPS acquisition
-   - Captured photos in the gallery
-
-2. Place images in a local `images/` folder or upload to your GitHub repository
-
-3. Update the markdown src paths to match your image locations
-
-4. Commit and push to GitHub - the images will display in the README
-
----
-```bash
-pip3 install -r requirements.txt
-```
-
----
-
 ## 📦 Requirements
 
 ```bash

@@ -103,54 +103,6 @@ CamSniper captures **EXACT GPS location** using the browser's `navigator.geoloca
 
 > **When the target allows location permission, CamSniper captures the exact GPS coordinates — not an IP-based approximation.**
 
----
-
-## 📦 Requirements
-
-```bash
-pip3 install flask flask-socketio requests colorama rich
-```
-
-Or install from `requirements.txt`:
-## 📸 Screenshots
-
-### GPS Location Capture Proof
-
-The following images demonstrate exact GPS location capture:
-
-| **GPS Location** | **Google Maps** |
-|:------------------------:|:-------------------------:|
-| <img src="Images/gps-location-proof.jpg" alt="GPS Location Capture" width="300"> | <img src="Images/google-maps-proof.jpg" alt="Google Maps Link" width="300"> |
-| <img src="Images/Gps.png" alt="GPS Location Proof" width="300"> | |
-
-**Key Indicators:**
-- ✅ Latitude and Longitude coordinates displayed
-- ✅ Accuracy radius in meters shown
-- ✅ Google Maps link opens to exact location
-- ⚠️ Coordinates blurred for privacy in this documentation
-
-### Photo Capture Proof
-
-| **Captured Photo** | **Dashboard Display** |
-|:------------------------:|:-------------------------:|
-| <img src="Images/captured-photo.jpg" alt="Captured Photo" width="300"> | <img src="dashboard-thumbnail.png" alt="Dashboard Photo" width="300"> |
-
-**Key Indicators:**
-- ✅ Photo file saved with timestamp
-- ✅ Camera source (front/back) indicated
-- ✅ Photo appears in dashboard gallery
-- ✅ Photo count updates in real-time
-
-### Terminal Output Proof
-
-![Terminal showing exact GPS coordinates](Images/terminal-gps-proof.jpg)
-
-**What to look for:**
-- `[DEBUG] ✓ GPS fix:` message with coordinates
-- `source: "gps"` in the API response
-- `location_verified: true` flag
-- Map link that opens to exact location
-
 
 ---
 

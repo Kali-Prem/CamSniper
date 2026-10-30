@@ -151,13 +151,6 @@ The following images demonstrate exact GPS location capture:
 - `location_verified: true` flag
 - Map link that opens to exact location
 
----
-
-> **Note:** Replace the `images/` folder paths with your actual screenshot locations. The images should demonstrate that:
-> 1. Exact GPS coordinates are captured (not approximate IP location)
-> 2. Google Maps link navigates to the correct location
-> 3. Dashboard displays the captured data correctly
-> 4. Terminal shows the GPS acquisition process
 
 ---
 

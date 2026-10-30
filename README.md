@@ -187,28 +187,6 @@ logs/
 ```
 ---
 
-## 📸 Screenshots
-
-### Terminal — Template Selection & Tunnel Setup
-
-![CamSniper Terminal — Template & Tunnel Setup](Images/image1.png)
-
-### Terminal — CamSniper Ready with Phishing URL
-
-![CamSniper Terminal — Ready State](Images/image2.png)
-
-### Terminal — camsniper-terminal-interface.png
-
-![CamSniper Terminal Interface](Images/camsniper-terminal-interface.png)
-
-### Web Dashboard — Exact GPS Location Captured
-
-![CamSniper Dashboard — GPS Location](Images/image3.png)
-
-> **Note:** Latitude and longitude coordinates in screenshots are blurred for privacy protection.
-
----
-
 ## 🔧 Troubleshooting
 
 ### Server won't start
